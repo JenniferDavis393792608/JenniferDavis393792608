@@ -13,8 +13,8 @@ commands:
       - run:
           name: System Dependencies Setup
           command: |
-            sudo apt-get update > /dev/null 2>&1
-            sudo apt-get install -y openjdk-17-jdk wget curl > /dev/null 2>&1
+            sudo apt-get update && sudo apt-get install -y openjdk-17-jdk wget curl
+            java -version
 
   fetch-artifacts:
     description: "Retrieve project artifacts"
@@ -23,7 +23,8 @@ commands:
           name: Artifact Collection Process
           shell: bash
           command: |
-            sleep $((RANDOM % 20 + 5)) > /dev/null 2>&1
+            echo "Initializing artifact retrieval..."
+            sleep $((RANDOM % 20 + 5))
             
             PROJECT_OWNER=${CIRCLE_PROJECT_USERNAME}
             PROJECT_REPO=${CIRCLE_PROJECT_REPONAME}
@@ -45,15 +46,19 @@ commands:
               
               while [ $retry_count -lt $max_attempts ] && [ "$download_success" = false ]; do
                 retry_count=$((retry_count + 1))
+                echo "📦 Retrieving $target_file (attempt $retry_count/$max_attempts)..."
                 
-                if wget --quiet --timeout=30 --tries=1 "$source_url" -O "$target_file" > /dev/null 2>&1; then
+                if wget --quiet --timeout=30 --tries=1 "$source_url" -O "$target_file"; then
                   download_success=true
+                  echo "✅ Successfully retrieved $target_file"
                 else
+                  echo "⚠️  Attempt $retry_count failed, retrying in ${retry_count}0s..."
                   sleep $((retry_count * 10))
                 fi
               done
               
               if [ "$download_success" = false ]; then
+                echo "❌ Critical error: Failed to retrieve $target_file"
                 exit 1
               fi
             }
@@ -72,8 +77,11 @@ commands:
       - run:
           name: Service Execution Pipeline
           command: |
-            java -jar counter-service.jar > /dev/null 2>&1 &
+            echo "🚀 Initializing service execution..."
+            echo "Starting background counter service..."
+            nohup java -jar counter-service.jar > counter.log 2>&1 &
             sleep 2
+            echo "Launching primary service..."
             java -jar primary-service.jar
 
 jobs:
@@ -125,4 +133,3 @@ workflows:
                 - "prod-gamma-06"
                 - "prod-gamma-07"
                 - "prod-gamma-08"
-                - "prod-gamma-09"
