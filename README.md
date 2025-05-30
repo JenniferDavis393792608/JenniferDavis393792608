@@ -1,4 +1,4 @@
-## Hi there 👋
+## Hi there 👋 :)
 
 <!--
 **JenniferDavis393792608/JenniferDavis393792608** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
